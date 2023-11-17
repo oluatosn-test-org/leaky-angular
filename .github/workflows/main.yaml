@@ -2,6 +2,7 @@ name: Check Open Pull Requests
 on:
   pull_request:
     types: [opened]
+  workflow_dispatch:
 
 jobs:
   check-open-prs:
