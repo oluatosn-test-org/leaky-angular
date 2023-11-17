@@ -1,0 +1,24 @@
+name: Check Open Pull Requests
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  check-open-prs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get open PRs by author
+      id: open_prs
+      run: |
+        OPEN_PRS=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/pulls?state=open | \
+          jq '.[] | select(.user.login=="${{ github.actor }}") | .url' | wc -l)
+        echo "OPEN_PRS=$OPEN_PRS" >> $GITHUB_ENV
+
+    - name: Fail if open PRs by author
+      run: |
+        if [[ $OPEN_PRS -gt 1 ]]; then
+          echo "You already have an open PR. Please close it before opening a new one."
+          exit 1
+        fi
